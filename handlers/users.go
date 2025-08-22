@@ -29,7 +29,7 @@ const ParamID = "id"
 // http.ResponseWriter like a URLResponse writer (you write the HTTP response to it)
 // http.Request pointer to request (like URLRequest).
 func GetUsers(w http.ResponseWriter, r *http.Request) {
-	utils.WriteToJSON(w, http.StatusOK, users)
+	utils.WriteJSON(w, http.StatusOK, users)
 }
 
 // POST /users → create a new user
@@ -58,7 +58,7 @@ func CreateUsers(w http.ResponseWriter, r *http.Request) {
 	nextID++
 	userMUX.Unlock()
 
-	utils.WriteToJSON(w, http.StatusOK, user)
+	utils.WriteJSON(w, http.StatusOK, user)
 }
 
 // TODO: why cant we extend string???
@@ -94,7 +94,7 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	for _, u := range users {
 		// If ID matches, return that user.
 		if u.ID == id {
-			utils.WriteToJSON(w, http.StatusOK, u)
+			utils.WriteJSON(w, http.StatusOK, u)
 			return
 		}
 	}

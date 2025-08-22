@@ -35,8 +35,8 @@ func main() {
 
 	// Global middleware
 	// Every request goes through logging and recovery before reaching your handlers.
-	r.Use(middleware.LoggingMiddleware)
-	r.Use(middleware.RecoveryMiddleware)
+	r.Use(middleware.Logging)
+	r.Use(middleware.Recovery)
 
 	// List users
 	r.Get("/users", handlers.GetUsers)
