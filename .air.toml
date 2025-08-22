@@ -1,0 +1,21 @@
+# .air.toml for go-api-demo
+
+root = "."
+tmp_dir = "tmp"
+
+[build]
+  # Build command → compiles your app into tmp/main
+  cmd = "go build -o ./tmp/main ."
+
+  # Binary to run after building
+  bin = "tmp/main"
+
+  # File types/extensions to watch
+  include_ext = ["go"]
+
+  # Folders to ignore (important so it doesn’t rebuild forever)
+  exclude_dir = ["tmp", "vendor"]
+
+[log]
+  color = true
+  time = true
