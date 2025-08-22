@@ -29,3 +29,7 @@ vendor/
 # Air (live reload) config/runtime
 .air.toml
 tmp/
+
+# Database files
+*.db
+database/*.db
