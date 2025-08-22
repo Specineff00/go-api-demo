@@ -1,9 +1,9 @@
 package middleware
 
 import (
+	"go-api-demo/utils"
 	"log"
 	"net/http"
-	"go-api-demo/utils"
 )
 
 // Recovery middleware to catch panics
