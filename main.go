@@ -1,6 +1,7 @@
 package main
 
 import (
+	"go-api-demo/database"
 	"go-api-demo/handlers"
 	"go-api-demo/middleware"
 	"log"
@@ -11,6 +12,10 @@ import (
 
 // Main entry point.
 func main() {
+
+	// Initialise database
+	database.InitDB()
+	database.CreateTables()
 
 	// // OLD Beginner way
 	// // Always needs the path and a func of signature responseWriter and request as params
