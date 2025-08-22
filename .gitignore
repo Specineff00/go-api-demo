@@ -1,0 +1,31 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Build directories
+bin/
+build/
+
+# Vendor directory (if you vendor dependencies)
+vendor/
+
+# IDE/editor specific files
+.vscode/
+.idea/
+*.swp
+
+# macOS system files
+.DS_Store
+
+# Air (live reload) config/runtime
+.air.toml
+tmp/
