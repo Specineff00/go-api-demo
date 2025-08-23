@@ -20,7 +20,7 @@ func main() {
 	database.SeedData()
 
 	// Init the repo
-	userRepo := repositories.NewRespository()
+	userRepo := repositories.NewUserRespository()
 
 	// Pass in repo to handlers
 	handlers.InitHandlers(userRepo)
@@ -56,6 +56,8 @@ func main() {
 	r.Get("/users", handlers.GetUsers)
 	r.Post("/users", handlers.CreateUsers)
 	r.Get("/users/{"+handlers.ParamID+"}", handlers.GetUserByID)
+	r.Put("/users/{"+handlers.ParamID+"}", handlers.UpdateUser)
+	r.Delete("/users/{"+handlers.ParamID+"}", handlers.DeleteUser)
 	// 	If a client calls /users/42, chi:
 	// - Matches the URL to the route template.
 	// - Captures the segment that matches {id} → "42".

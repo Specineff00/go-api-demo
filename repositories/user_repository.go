@@ -16,10 +16,10 @@ type UserRepository interface {
 }
 
 const (
-	createUserQuery  = `INSERT INTO users (name email) VALUES (?, ?)`
+	createUserQuery  = `INSERT INTO users (name, email) VALUES (?, ?)`
 	getUserByIDQuery = `SELECT id, name, email, created_at FROM users WHERE id = ?`
 	getAllUsersQuery = `SELECT id, name, email, created_at FROM users`
-	updateUserQuery  = `UPDATE user SET name = ?, email = ? WHERE id = ?`
+	updateUserQuery  = `UPDATE users SET name = ?, email = ? WHERE id = ?`
 	deleteUserQuery  = `DELETE FROM users WHERE id = ?`
 )
 
@@ -27,7 +27,7 @@ type SQLiteUserRepository struct {
 	db *sql.DB // Uses the global DB connection we set up
 }
 
-func NewRespository() UserRepository { // Constructor like init()
+func NewUserRespository() UserRepository { // Constructor like init()
 	repo := &SQLiteUserRepository{
 		db: database.DB,
 	}
@@ -68,14 +68,6 @@ func (r *SQLiteUserRepository) ValidateSchema() error {
 		return fmt.Errorf("users table does not exist")
 	}
 
-	columns := []string{"id", "name", "email", "created_at"}
-	for _, column := range columns {
-		var columnName string
-		err := r.db.QueryRow("PRAGMA table_info(users) WHERE name = ?", column).Scan(&columnName)
-		if err != nil {
-			return fmt.Errorf("column '%s' does not exist in the users table", column)
-		}
-	}
 	return nil
 }
 

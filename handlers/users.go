@@ -37,7 +37,6 @@ func GetUsers(w http.ResponseWriter, r *http.Request) {
 
 // POST /users → create a new user
 func CreateUsers(w http.ResponseWriter, r *http.Request) {
-	// Anonymous struct → no need to define a type globally.
 	var user models.User
 
 	// Decodes the body and stores it in pointer
@@ -53,10 +52,12 @@ func CreateUsers(w http.ResponseWriter, r *http.Request) {
 
 	if utils.IsEmpty(user.Name) {
 		utils.WriteError(w, http.StatusBadRequest, "Name is required")
+		return
 	}
 
 	if utils.IsEmpty(user.Email) {
 		utils.WriteError(w, http.StatusBadRequest, "Email is required")
+		return
 	}
 
 	// Create a user in DB
@@ -106,5 +107,74 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// Send back response (user)
+	utils.WriteJSON(w, http.StatusOK, user)
+}
+
+func DeleteUser(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, ParamID)
+
+	if utils.IsEmpty(idStr) {
+		utils.WriteJSON(w, http.StatusBadRequest, "Missing ID Parameters")
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	err = userRepo.Delete(id)
+	if err != nil {
+		utils.WriteError(w, http.StatusNotFound, "User not found")
+		return
+	}
+
+	w.WriteHeader(http.StatusNoContent)
+}
+
+func UpdateUser(w http.ResponseWriter, r *http.Request) {
+	idStr := chi.URLParam(r, ParamID)
+
+	if utils.IsEmpty(idStr) {
+		utils.WriteError(w, http.StatusBadRequest, "Missing ID Parameter")
+		return
+	}
+
+	id, err := strconv.Atoi(idStr)
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Invalid ID")
+		return
+	}
+
+	// Parse the request body
+	var user models.User
+
+	if err := json.NewDecoder(r.Body).Decode(&user); err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	user.ID = id
+
+	// Basic validation
+	if utils.IsEmpty(user.Name) {
+		utils.WriteError(w, http.StatusBadRequest, "Name is required")
+		return
+	}
+
+	if utils.IsEmpty(user.Email) {
+		utils.WriteError(w, http.StatusBadRequest, "Email is required")
+		return
+	}
+
+	// Try to update the user
+	err = userRepo.Update(&user)
+	if err != nil {
+		utils.WriteError(w, http.StatusNotFound, "User not found")
+		return
+	}
+
 	utils.WriteJSON(w, http.StatusOK, user)
 }
