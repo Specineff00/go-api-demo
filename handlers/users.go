@@ -3,21 +3,19 @@ package handlers
 import (
 	"encoding/json"
 	"go-api-demo/models"
+	"go-api-demo/repositories"
 	"go-api-demo/utils"
 	"net/http"
 	"strconv"
-	"sync"
 
 	"github.com/go-chi/chi/v5"
 )
 
-// global state (in-memory DB)
-// For learning purposes and not actual DB
-var (
-	users   = []models.User{} // Slice not an Array (Mutable reference type or dynamic array)
-	nextID  = 1               // This is mutable!
-	userMUX sync.Mutex        // Prevents Data Races
-)
+var userRepo repositories.UserRepository
+
+func InitHandlers(repo repositories.UserRepository) {
+	userRepo = repo
+}
 
 const ParamID = "id"
 
@@ -29,6 +27,11 @@ const ParamID = "id"
 // http.ResponseWriter like a URLResponse writer (you write the HTTP response to it)
 // http.Request pointer to request (like URLRequest).
 func GetUsers(w http.ResponseWriter, r *http.Request) {
+	users, err := userRepo.GetAll()
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to fetch users")
+		return
+	}
 	utils.WriteJSON(w, http.StatusOK, users)
 }
 
@@ -48,17 +51,22 @@ func CreateUsers(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if user.Name == "" {
+	if utils.IsEmpty(user.Name) {
 		utils.WriteError(w, http.StatusBadRequest, "Name is required")
 	}
 
-	// lock before mutating global state (like queue.sync).
-	userMUX.Lock()
-	users = append(users, user)
-	nextID++
-	userMUX.Unlock()
+	if utils.IsEmpty(user.Email) {
+		utils.WriteError(w, http.StatusBadRequest, "Email is required")
+	}
 
-	utils.WriteJSON(w, http.StatusOK, user)
+	// Create a user in DB
+	err := userRepo.Create(&user)
+	if err != nil {
+		utils.WriteError(w, http.StatusInternalServerError, "Failed to create user")
+		return
+	}
+	// Sends back the response to client
+	utils.WriteJSON(w, http.StatusCreated, user)
 }
 
 // TODO: why cant we extend string???
@@ -78,27 +86,25 @@ func GetUserByID(w http.ResponseWriter, r *http.Request) {
 	// Extracts id query param (?id=123).
 	// ids := r.URL.Query().Get("id")
 
-	if idStr == "" {
+	if utils.IsEmpty(idStr) {
 		utils.WriteError(w, http.StatusBadRequest, "Missing ID parameter")
 		return
 	}
 
 	// Convert to string to int
 	id, err := strconv.Atoi(idStr) // can give an error as well, hence two return types
-
 	if err != nil {
 		utils.WriteError(w, http.StatusBadRequest, "Invalid ID")
 		return
 	}
 
-	for _, u := range users {
-		// If ID matches, return that user.
-		if u.ID == id {
-			utils.WriteJSON(w, http.StatusOK, u)
-			return
-		}
+	user, err := userRepo.GetByID(id)
+
+	if err != nil {
+		utils.WriteError(w, http.StatusBadRequest, "User not found")
+		return
 	}
 
-	// If loop finishes without finding → 404 Not Found.
-	http.NotFound(w, r)
+	// Send back response (user)
+	utils.WriteJSON(w, http.StatusOK, user)
 }

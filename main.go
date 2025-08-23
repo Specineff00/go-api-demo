@@ -4,6 +4,7 @@ import (
 	"go-api-demo/database"
 	"go-api-demo/handlers"
 	"go-api-demo/middleware"
+	"go-api-demo/repositories"
 	"log"
 	"net/http"
 
@@ -13,9 +14,16 @@ import (
 // Main entry point.
 func main() {
 
-	// Initialise database
+	// Database setup
 	database.InitDB()
 	database.CreateTables()
+	database.SeedData()
+
+	// Init the repo
+	userRepo := repositories.NewRespository()
+
+	// Pass in repo to handlers
+	handlers.InitHandlers(userRepo)
 
 	// // OLD Beginner way
 	// // Always needs the path and a func of signature responseWriter and request as params
@@ -36,6 +44,7 @@ func main() {
 
 	// Improved way using Router
 	// Now the router handles method + path dispatch.
+	// Init
 	r := chi.NewRouter()
 
 	// Global middleware
@@ -45,11 +54,7 @@ func main() {
 
 	// List users
 	r.Get("/users", handlers.GetUsers)
-
-	// Create user
 	r.Post("/users", handlers.CreateUsers)
-
-	// Get user by ID
 	r.Get("/users/{"+handlers.ParamID+"}", handlers.GetUserByID)
 	// 	If a client calls /users/42, chi:
 	// - Matches the URL to the route template.

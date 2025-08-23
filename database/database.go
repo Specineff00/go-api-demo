@@ -3,6 +3,7 @@ package database
 import (
 	"database/sql"
 	"log"
+	"os"
 
 	_ "github.com/mattn/go-sqlite3"
 )
@@ -25,18 +26,34 @@ func InitDB() {
 }
 
 func CreateTables() {
-	createUserTables := `
-	CREATE TABLE IF NOT EXISTS users (
-		id INTEGER PRIMARY KEY AUTOINCREMENT,
-		name TEXT NOT NULL,
-		email TEXT UNIQUE NOT NULL,
-		created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-	);`
+	// Read schema from file
+	schema, err := os.ReadFile("./database/schema.sql")
+	if err != nil {
+		log.Fatal(err)
+	}
 
-	_, err := DB.Exec(createUserTables)
+	_, err = DB.Exec(string(schema))
 	if err != nil {
 		log.Fatal(err)
 	}
 
 	log.Println("Users tables successfully created")
+}
+
+func SeedData() {
+	seedSQL, err := os.ReadFile("./database/seed.sql")
+
+	if err != nil {
+		log.Printf("Warning! Could not read seed file %v", err)
+		return
+	}
+
+	// Execute the seed SQL
+	_, err = DB.Exec(string(seedSQL))
+	if err != nil {
+		log.Printf("Warning: Could not seed data %v", err)
+		return
+	}
+
+	log.Println("Database seeded with sample data")
 }
